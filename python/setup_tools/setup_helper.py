@@ -3,6 +3,7 @@ import shutil
 import sys
 import sysconfig
 import functools
+import subprocess
 from pathlib import Path
 import hashlib
 from distutils.sysconfig import get_python_lib
@@ -330,7 +331,7 @@ def handle_plugin_backend(editable):
     plugin_mode = os.getenv("FLAGTREE_PLUGIN")
     if plugin_mode and plugin_mode.upper() not in ["0", "OFF"]:
         return
-    if flagtree_backend in ["iluvatar", "mthreads", "sunrise"]:
+    if flagtree_backend in ["iluvatar", "mthreads", "metax", "sunrise"]:
         flagtree_backend_dir = Path.home() / ".flagtree" / flagtree_backend
         flagtree_plugin_so = flagtree_backend + "TritonPlugin.so"
         if editable is False:
@@ -341,7 +342,7 @@ def handle_plugin_backend(editable):
             dst_build_plugin_path = dst_build_plugin_dir / flagtree_plugin_so
             shutil.copy(src_build_plugin_path, dst_build_plugin_path)
         src_install_plugin_path = flagtree_backend_dir / flagtree_plugin_so
-        if flagtree_backend in ("mthreads", "sunrise"):
+        if flagtree_backend in ("mthreads", "metax", "sunrise"):
             dst_install_plugin_dir = Path(
                 __file__).resolve().parent.parent.parent / "third_party" / flagtree_backend / "python" / "triton" / "_C"
         else:
@@ -366,7 +367,6 @@ def uninstall_triton():
         return
     try:
         import pkg_resources
-        import subprocess
         try:
             pkg_resources.get_distribution('triton')
             print("Detected existing 'triton' package. Uninstalling to avoid conflicts...")
@@ -395,15 +395,15 @@ cache = FlagTreeCache()
 cache.store(
     file="iluvatar-llvm18-x86_64",
     condition=("iluvatar" == flagtree_backend),
-    url="https://baai-cp-web.ks3-cn-beijing.ksyuncs.com/trans/iluvatar-llvm18-x86_64_v0.4.0.tar.gz",
+    url=configs.activated_module.get_resources_url('llvm'),
     pre_hock=lambda: check_env('LLVM_SYSPATH'),
     post_hock=set_llvm_env,
 )
 
-cache.store(
-    file="iluvatarTritonPlugin.so", condition=("iluvatar" == flagtree_backend) and (not configs.flagtree_plugin), url=
-    "https://baai-cp-web.ks3-cn-beijing.ksyuncs.com/trans/iluvatarTritonPlugin-cpython3.10-glibc2.35-glibcxx3.4.30-cxxabi1.3.13-ubuntu-x86_64_v0.4.0.tar.gz",
-    copy_dst_path=f"third_party/{flagtree_backend}", md5_digest="d1c5f54c")
+cache.store(file="iluvatarTritonPlugin.so", condition=("iluvatar" == flagtree_backend)
+            and (not configs.flagtree_plugin), url=configs.activated_module.get_resources_url('plugin'),
+            copy_dst_path=f"third_party/{flagtree_backend}",
+            md5_digest=configs.activated_module.get_resources_hash('plugin'))
 
 # klx xpu
 cache.store(
