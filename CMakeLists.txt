@@ -165,6 +165,14 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+# XPU: conceal all IR text (MLIR/LLVM/ASM) in Release builds, aligning with the
+# internal Triton 3.0 TRITON_CONCEAL_IR behavior. XPU-only and Release-only.
+if(FLAGTREE_BACKEND STREQUAL "xpu")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DTRITON_CONCEAL_IR=1")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DTRITON_CONCEAL_IR=1")
+  message(STATUS "[XPU] TRITON_CONCEAL_IR=1 enabled for Release build")
+endif()
+
 if(TRITON_BUILD_UT)
   # This is an aggregate target for all unit tests.
   add_custom_target(TritonUnitTests)
