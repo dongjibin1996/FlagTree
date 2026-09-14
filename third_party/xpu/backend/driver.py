@@ -1059,7 +1059,14 @@ class XPUDriver(GPUDriver):
 
     def get_active_torch_device(self):
         import torch
-        return torch.device("xpu", self.get_current_device())
+        # Must agree with get_device_interface(): on this stack torch is
+        # torch_xmlir, which presents the XPU under the torch.cuda interface
+        # (native torch here is built without USE_XPU, so a torch.device("xpu")
+        # object would be rejected by every torch API).  Mirror native xtriton
+        # 3.0, which also has no "xpu" torch device: only the compilation
+        # GPUTarget is named "xpu".  If this stack ever moves to a torch build
+        # with native XPU support, flip this together with get_device_interface.
+        return torch.device("cuda", self.get_current_device())
 
     def get_device_interface(self):
         import torch
