@@ -103,7 +103,7 @@ def get_hip_lds_size():
 
 def is_xpu():
     target = get_current_target()
-    return False if target is None else target.backend == "xpu"
+    return False if target is None else target.backend in ("cuda", "xpu")
 
 
 def get_arch():

@@ -230,7 +230,10 @@ class XPUBackend(BaseBackend):
 
     @staticmethod
     def supports_target(target: GPUTarget):
-        return target.backend == "xpu"
+        # "cuda" is the backend string reported by XPUDriver.get_current_target().
+        # "xpu" is kept as an alias so CompiledKernel metadata cached under the
+        # previous target string still deserializes and routes here.
+        return target.backend in ("cuda", "xpu")
 
     @staticmethod
     def path_to_xpu_compile_tool(opt):

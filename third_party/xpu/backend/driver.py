@@ -1052,7 +1052,12 @@ class XPUDriver(GPUDriver):
         device = self.get_current_device()
         arch = self.utils.get_device_properties(device)["device_model"]
         warp_size = 1  # we don't have warp
-        return GPUTarget("xpu", arch, warp_size)
+        # Report backend "cuda" (not "xpu") for ecosystem compatibility: this
+        # stack's torch presents the XPU under the torch.cuda interface, and
+        # downstream projects (sglang/FlagGems/vLLM kernels) key their device
+        # dispatch on target.backend == "cuda". XPUBackend.supports_target
+        # accepts both "cuda" and the legacy "xpu" (old cache metadata).
+        return GPUTarget("cuda", arch, warp_size)
 
     def map_python_to_cpp_type(self, ty: str) -> str:
         return ty_to_cpp(ty)
