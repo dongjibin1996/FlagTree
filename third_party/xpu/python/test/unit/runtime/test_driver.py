@@ -23,5 +23,4 @@ def test_xpu_driver_smoke():
     assert type(driver.active).__name__ == "XPUDriver"
     # The reported backend string follows TRITON_XPU_TARGET_BACKEND
     # (default "cuda"; see XPUDriver.get_current_target).
-    assert driver.active.get_current_target().backend == os.environ.get(
-        "TRITON_XPU_TARGET_BACKEND", "cuda")
+    assert driver.active.get_current_target().backend == os.environ.get("TRITON_XPU_TARGET_BACKEND", "cuda")
